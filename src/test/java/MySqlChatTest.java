@@ -2,10 +2,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.Random;
 
 public class MySqlChatTest extends Assert {
 
@@ -37,6 +35,30 @@ public class MySqlChatTest extends Assert {
         while (resultSet.next()) {
             System.out.println(
                     resultSet.getString("nickname"));
+        }
+
+
+        PreparedStatement insert =
+                con.prepareStatement("INSERT INTO user(nickname, password) " +
+                        "VALUES(?, ?)");
+        PreparedStatement delete =
+                con.prepareStatement("DELETE FROM user " +
+                        "WHERE nickname = ?");
+        Random random = new Random();
+        for (int i = 111; i <= 119; i++) {
+            String nickname = "user" + i;
+            String password = "password " + random.nextInt();
+            insert.setString(1, nickname);
+            insert.setString(2, password);
+
+            try {
+                insert.executeUpdate();
+            } catch (SQLIntegrityConstraintViolationException ex) {
+                delete.setString(1, nickname);
+                delete.executeUpdate();
+
+                insert.executeUpdate();
+            }
         }
     }
 }
